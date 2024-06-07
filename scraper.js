@@ -28,25 +28,25 @@ class Scraper {
       //     `Error fetching text content for selector: ${selector}`,
       //     error
       //   );
-      console.log(`Selector not found`);
+      console.log(`Text content not found`);
       return "Not Available";
     }
   }
 
-  async getAttributeValue(selector, attribute) {
+  async getAttributeValue(selector) {
     try {
-      var img =
-        "#MainContent > div:nth-child(1) > div:nth-child(1) > div > div > div > div.grid__item.medium-up--one-half.product-single__sticky > div > div > div.product__main-photos.aos-init.aos-animate > div:nth-child(1) > div > div > div > img";
+      await this.page.waitForSelector(selector, { timeout: 5000 });
       const attribute = await this.page.$eval(selector, (element) =>
-        element.getAttribute(attribute)
+        element.getAttribute("data-photoswipe-src")
       );
+
       return attribute;
     } catch (error) {
       //   console.error(
       //     `Error fetching text content for selector: ${selector}`,
       //     error
       //   );
-      console.log(`Selector not found`);
+      console.log(`Attribute not found`);
       return "Not Available";
     }
   }
@@ -54,7 +54,10 @@ class Scraper {
   async scrapePage(pageNum) {
     this.page = await this.browser.newPage();
     await this.page.setViewport({ width: 1366, height: 780 });
-    await this.page.goto(
+    // await this.page.goto(
+    //   `https://steadymoto.com/collections/all?page=${pageNum}&sort_by=best-selling`
+    // );
+    await this.bruteForceGotoPage(
       `https://steadymoto.com/collections/all?page=${pageNum}&sort_by=best-selling`
     );
     console.log(`Page ${pageNum} opened`);
@@ -82,16 +85,17 @@ class Scraper {
       }
 
       console.log(`Opening ${pageLink}`);
-      await this.page.goto(pageLink);
+      // await this.page.goto(pageLink);
+
+      await this.bruteForceGotoPage(pageLink);
 
       var imgRef = await this.getAttributeValue(
-        "#MainContent > div:nth-child(1) > div:nth-child(1) > div > div > div > div.grid__item.medium-up--one-half.product-single__sticky > div > div > div.product__main-photos.aos-init.aos-animate > div:nth-child(1) > div > div > div > img",
-        "data-photoswipe-src"
+        "#MainContent > div:nth-child(1) > div:nth-child(1) > div > div > div > div.grid__item.medium-up--one-half.product-single__sticky > div > div > div.product__main-photos.aos-init.aos-animate > div:nth-child(1) > div > div > div > img"
       );
+
       if (imgRef === "Not Available") {
         imgRef = await this.getAttributeValue(
-          "#MainContent > div:nth-child(1) > div:nth-child(1) > div > div > div > div.grid__item.medium-up--one-half.product-single__sticky > div > div > div.product__main-photos.aos-init.aos-animate > div:nth-child(1) > div > div > div.product-main-slide.starting-slide.is-selected > div > div > img",
-          "data-photoswipe-src"
+          "#MainContent > div:nth-child(1) > div:nth-child(1) > div > div > div > div.grid__item.medium-up--one-half.product-single__sticky > div > div > div.product__main-photos.aos-init.aos-animate > div:nth-child(1) > div > div > div.product-main-slide.starting-slide.is-selected > div > div > img"
         );
       }
 
@@ -154,12 +158,24 @@ class Scraper {
       }
       this.products.push(toBeSaved);
       console.log(toBeSaved);
-      this.page.close();
+      await this.page.close();
     }
   }
 
   async close() {
     await this.browser.close();
+  }
+
+  async bruteForceGotoPage(pageLink) {
+    while (true) {
+      try {
+        await this.page.goto(pageLink);
+        break;
+      } catch (error) {
+        console.error("Error navigating to page", error);
+        continue;
+      }
+    }
   }
 
   async getProducts() {
