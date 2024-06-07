@@ -173,6 +173,8 @@ class Scraper {
         break;
       } catch (error) {
         console.error("Error navigating to page", error);
+        await this.page.close();
+        this.page = await this.browser.newPage();
         continue;
       }
     }
