@@ -1,6 +1,9 @@
 import puppeteer from "puppeteer";
 import { v4 as uuidv4 } from "uuid";
 import GoogleSheetsAPI from "./GoogleSheetsAPI.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 class Scraper {
   constructor() {
