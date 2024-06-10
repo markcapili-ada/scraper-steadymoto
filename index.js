@@ -7,6 +7,7 @@ const main = async () => {
     await scraper.scrapePage(pageNum);
   }
   await scraper.close();
+  console.log("Scraping done");
 };
 
 (async () => {
