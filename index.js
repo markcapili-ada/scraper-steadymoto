@@ -6,8 +6,8 @@ const main = async () => {
   for (let pageNum = 1; pageNum <= 101; pageNum++) {
     await scraper.scrapePage(pageNum);
   }
-  await scraper.close();
-  console.log("Scraping done");
+  // await scraper.close();
+  // console.log("Scraping done");
 };
 
 (async () => {
