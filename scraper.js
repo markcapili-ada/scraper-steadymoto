@@ -97,7 +97,7 @@ class Scraper {
       hrefs.push(href.replace("/collections/all", ""));
     }
 
-    await this.page.close();
+    // await this.page.close();
 
     // NAVIGATE TO EACH HREFS AND SCRAPE DATA
     for (let hrefIndex = 0; hrefIndex < hrefs.length; hrefIndex++) {
@@ -182,7 +182,7 @@ class Scraper {
       }
       this.products.push(toBeSaved);
       console.log(toBeSaved);
-      await this.page.close();
+      // await this.page.close();
     }
   }
 
@@ -197,7 +197,7 @@ class Scraper {
         break;
       } catch (error) {
         console.error("Error navigating to page", error);
-        await this.page.close();
+        // await this.page.close();
         this.page = await this.browser.newPage();
         continue;
       }
