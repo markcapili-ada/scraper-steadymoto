@@ -12,7 +12,28 @@ class Scraper {
   }
 
   async init() {
-    this.browser = await puppeteer.launch();
+    if (process.env.NODE_ENV === "production") {
+      this.browser = await puppeteer.launch({
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+          "--disable-gpu",
+          "--no-first-run",
+          "--no-zygote",
+          "--single-process",
+          "--disable-extensions",
+        ],
+        headless: "new",
+        executablePath:
+          process.env.NODE_ENV === "production"
+            ? process.env.PUPPETER_EXECUTABLE_PATH
+            : puppeteer.executablePath(),
+      });
+    } else {
+      this.browser = await puppeteer.launch();
+    }
+
     this.products = await this.getProducts();
     this.sheet = "data";
   }
