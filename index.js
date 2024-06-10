@@ -1,4 +1,5 @@
 import Scraper from "./scraper.js";
+import express from "express";
 
 const main = async () => {
   const scraper = new Scraper();
@@ -9,6 +10,13 @@ const main = async () => {
   // await scraper.close();
   // console.log("Scraping done");
 };
+
+const app = express();
+const port = 3001;
+
+app.listen(port, () => {
+  console.log(`Scraper app listening at http://localhost:${port}`);
+});
 
 (async () => {
   await main();
