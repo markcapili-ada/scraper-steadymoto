@@ -4,11 +4,11 @@ import express from "express";
 const main = async () => {
   const scraper = new Scraper();
   await scraper.init();
-  for (let pageNum = 1; pageNum <= 101; pageNum++) {
+  for (let pageNum = 1; pageNum <= 102; pageNum++) {
     await scraper.scrapePage(pageNum);
   }
-  // await scraper.close();
-  // console.log("Scraping done");
+  await scraper.close();
+  console.log("Scraping done");
 };
 
 const app = express();

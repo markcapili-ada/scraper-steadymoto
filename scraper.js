@@ -33,8 +33,10 @@ class Scraper {
             ? process.env.PUPPETER_EXECUTABLE_PATH
             : puppeteer.executablePath(),
       });
+      console.log("Browser opened @ prod mode");
     } else {
       this.browser = await puppeteer.launch();
+      console.log("Browser opened @ dev mode");
     }
 
     this.products = await this.getProducts();
@@ -78,26 +80,38 @@ class Scraper {
   async scrapePage(pageNum) {
     this.page = await this.browser.newPage();
     await this.page.setViewport({ width: 1366, height: 780 });
+
     // await this.page.goto(
     //   `https://steadymoto.com/collections/all?page=${pageNum}&sort_by=best-selling`
     // );
     await this.bruteForceGotoPage(
-      `https://steadymoto.com/collections/all?page=${pageNum}&sort_by=best-selling`
+      `https://steadymoto.com/collections/all?page=${pageNum}&sort_by=created-descending`
     );
-    console.log(`Page ${pageNum} opened`);
+    console.log(
+      `Page ${pageNum} opened: https://steadymoto.com/collections/all?page=${pageNum}&sort_by=created-descending `
+    );
+    await this.page.click(`#localization_formtoolbar > div > div > button`);
+    await this.page.click(`#CurrencyList-toolbar > li:nth-child(101) > a`);
+
     var hrefs = [];
 
     // POPULATE THE HREFS ARRAY
     for (let index = 1; index <= 30; index++) {
-      var selector1 = `#CollectionAjaxContent > div > div > div.grid__item.medium-up--four-fifths.grid__item--content > div:nth-child(2) > div > div.collection-grid__wrapper > div.grid.grid--uniform > div:nth-child(${index}) > div > a`;
-      await this.page.waitForSelector(selector1);
-      const href = await this.page.$eval(selector1, (element) =>
-        element.getAttribute("href")
-      );
-      hrefs.push(href.replace("/collections/all", ""));
+      try {
+        var selector1 = `#CollectionAjaxContent > div > div > div.grid__item.medium-up--four-fifths.grid__item--content > div:nth-child(2) > div > div.collection-grid__wrapper > div.grid.grid--uniform > div:nth-child(${index}) > div > a`;
+        await this.page.waitForSelector(selector1, { timeout: 5000 });
+        const href = await this.page.$eval(selector1, (element) =>
+          element.getAttribute("href")
+        );
+        hrefs.push(href.replace("/collections/all", ""));
+      } catch (error) {
+        console.error("Error fetching href", error);
+
+        await this.page.screenshot({ path: "error.png" });
+      }
     }
 
-    // await this.page.close();
+    await this.page.close();
 
     // NAVIGATE TO EACH HREFS AND SCRAPE DATA
     for (let hrefIndex = 0; hrefIndex < hrefs.length; hrefIndex++) {
@@ -182,7 +196,7 @@ class Scraper {
       }
       this.products.push(toBeSaved);
       console.log(toBeSaved);
-      // await this.page.close();
+      await this.page.close();
     }
   }
 
@@ -197,8 +211,8 @@ class Scraper {
         break;
       } catch (error) {
         console.error("Error navigating to page", error);
-        // await this.page.close();
-        this.page = await this.browser.newPage();
+        await this.page.close(); // Close the old page
+        this.page = await this.browser.newPage(); // Create a new page
         continue;
       }
     }
